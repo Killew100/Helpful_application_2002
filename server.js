@@ -18,9 +18,7 @@ var rl = readline.createInterface({
 });
 app.options('*', cors());
 var current = null;
-var playing = false;
 var playlist = [];
-var volume = 1;
 
 app.get('/player', function (req, res) {
     res.sendFile(__dirname + '/player.html');
@@ -29,94 +27,106 @@ app.get('/player', function (req, res) {
 Array.prototype.insert = function (index, item) {
     this.splice(index, 0, item);
 };
+class Timer {
+    constructor(name) {
+        this.running = false;
+        this.name = name;
+        this.display = "00:00:00";
+        this.reset();
+        this.print(this.times);
+    }
+
+    reset() {
+        this.times = [ 0, 0, 0 ];
+        this.stop();
+    }
+
+    start() {
+        console.log("started");
+        if (!this.time) this.time = Date.now();
+        if (!this.running) {
+            this.running = true;
+            setImmediate(this.step.bind(this));
+        }
+    }
+    stop() {
+        console.log(this.times);
+        this.running = false;
+        this.time = null;
+    }
+
+    step(timestamp) {
+        if (!this.running) return;
+        this.calculate(timestamp);
+        this.time = timestamp;
+        this.print(this.times);
+        (this.step.bind(this));
+    }
+
+    calculate(timestamp) {
+        var diff = timestamp - this.time;
+        // Hundredths of a second are 100 ms
+        this.times[2] += diff / 1000;
+        // Seconds are 100 hundredths of a second
+        if (this.times[2] >= 60) {
+            this.times[1] += 1;
+            this.times[2] -= 60;
+        }
+        // Minutes are 60 seconds
+        if (this.times[1] >= 60) {
+            this.times[0] += 1;
+            this.times[1] -= 60;
+        }
+    }
+    print() {
+        this.display = Timer.format(this.times);
+    }
+
+    static format(times) {
+        return `${pad0(times[0], 2)}:${pad0(times[1], 2)}:${pad0(Math.floor(times[2]), 2)}`;
+    }
+}
+
+function pad0(value, count) {
+    var result = value.toString();
+    for (; result.length < count; --count)
+        result = '0' + result;
+    return result;
+}
 
 io.on('connection', function (socket) {
     socket.on('add', function (url) {
-        var video = getVideoId(url);
-        if (video !== undefined && video.id !== undefined) {
-            console.log(clk.blue('Adding video ') + clk.blue.bold(video.id));
-            if (video.service === 'youtube') {
-                playlist.push(video.id);
-                if (current === null) {
-                    next(io);
-                }
+        var car = new Timer(url);
+        if (car !== undefined) {
+            console.log(clk.blue('Lisan auto: ') + clk.blue.bold(car.name));
+            playlist.push(car);
             }
-        }
         updateInfo(io);
     });
     socket.on('remove', function (index) {
-        console.log(clk.blue('Removing video ') + clk.blue.bold(playlist[index]));
+        console.log(clk.red('Eemaldan auto: ') + clk.red.bold(playlist[index]));
         playlist.splice(index, 1);
         updateInfo(io);
     });
-    socket.on('next', function (ignored) {
-        console.log(clk.blue('Skipping current'));
-        next(io);
-        updateInfo(io);
+    socket.on('starting', function (item) {
+        console.log(item);
+        playlist[item].start();
     });
-    socket.on('finished', function (ignored) {
-        console.log(clk.yellow('Finished current'));
-        next(io);
-        updateInfo(io);
-    });
-    socket.on('get', function (ignored) {
-        updateInfo(socket);
-        socket.emit('volume', volume);
-        socket.emit('playing', playing);
-    });
-    socket.on('playing', function (bool) {
-        playing = bool;
-        io.emit('playing', bool);
-    });
-    socket.on('volume', function (value) {
-        console.log(clk.blue('Set volume to ') + clk.blue.bold(value));
-        volume = value;
-        io.emit('volume', volume);
+    socket.on('stopping', function (item) {
+        console.log(item);
+        playlist[item].stop();
     });
 });
-
-function next(io) {
-    console.log(clk.blue('Finished video ') + clk.blue.bold(current));
-    if (playlist.length !== 0) {
-        playVideo(playlist.shift(), io);
-    } else {
-        current = null;
-        console.log(clk.yellow('List empty, waiting for queue'));
-    }
-}
-
-function playVideo(id, target) {
-    current = id;
-    console.log(clk.green('Playing video ') + clk.green.bold(id));
-    target.emit('play', id);
-}
-
 function updateInfo(target) {
-    if (current === null) {
-        target.emit('current', null);
-    } else {
-        fetchVideoInfo(current, function (err, info) {
-            target.emit('current', {
-                'id': current,
-                'info': info
-            });
-        });
-    }
     var prettyPlaylist = playlist.concat();
     var counter = 0;
     if (playlist.length > 0) {
         prettyPlaylist.forEach(function (item, index, array) {
-            fetchVideoInfo(item, function (err, res) {
-                array[index] = ({
-                    id: item,
-                    info: res
-                });
                 counter++;
                 if (counter === playlist.length) {
                     target.emit('list', prettyPlaylist);
                 }
             });
-        });
     } else {
         target.emit('list', []);
     }
