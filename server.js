@@ -27,65 +27,60 @@ app.get('/player', function (req, res) {
 Array.prototype.insert = function (index, item) {
     this.splice(index, 0, item);
 };
-class Timer {
-    constructor(name) {
-        this.running = false;
-        this.name = name;
-        this.display = "00:00:00";
-        this.reset();
-        this.print(this.times);
-    }
-
-    reset() {
+function Timer(name) {
+    this.running = false;
+    this.name = name;
+    this.display = "00:00:00";
+    this.times = [ 0, 0, 0 ];
+    this.stop();
+    this.print(this.times);
+}
+Timer.prototype.reset = function () {
         this.times = [ 0, 0, 0 ];
-        this.stop();
-    }
-
-    start() {
-        console.log("started");
-        if (!this.time) this.time = Date.now();
-        if (!this.running) {
-            this.running = true;
-            setImmediate(this.step.bind(this));
-        }
-    }
-    stop() {
-        console.log(this.times);
-        this.running = false;
-        this.time = null;
-    }
-
-    step(timestamp) {
-        if (!this.running) return;
-        this.calculate(timestamp);
-        this.time = timestamp;
         this.print(this.times);
-        (this.step.bind(this));
-    }
+        this.stop();
+    };
 
-    calculate(timestamp) {
-        var diff = timestamp - this.time;
-        // Hundredths of a second are 100 ms
-        this.times[2] += diff / 1000;
+Timer.prototype.start = function(car) {
+        if (!car.running) {
+            car.running = true;
+            setTimeout(function(){
+                    car.step(car)},
+                1000);
+        }
+    };
+Timer.prototype.stop = function() {
+        this.running = false;
+        updateInfo(io);
+    };
+
+Timer.prototype.step = function(car) {
+        if (!car.running) return;
+        car.times[2] += 1;
         // Seconds are 100 hundredths of a second
-        if (this.times[2] >= 60) {
-            this.times[1] += 1;
-            this.times[2] -= 60;
+        if (car.times[2] >= 60) {
+            car.times[1] += 1;
+            car.times[2] -= 60;
         }
         // Minutes are 60 seconds
-        if (this.times[1] >= 60) {
-            this.times[0] += 1;
-            this.times[1] -= 60;
+        if (car.times[1] >= 60) {
+            car.times[0] += 1;
+            car.times[1] -= 60;
         }
-    }
-    print() {
-        this.display = Timer.format(this.times);
-    }
+        car.print(car.times);
+        updateInfo(io);
+        setTimeout(function(){
+            car.step(car) },
+            1000);
+    };
 
-    static format(times) {
+Timer.prototype.print = function() {
+        this.display = this.format(this.times);
+    };
+
+Timer.prototype.format = function(times) {
         return `${pad0(times[0], 2)}:${pad0(times[1], 2)}:${pad0(Math.floor(times[2]), 2)}`;
-    }
-}
+    };
 
 function pad0(value, count) {
     var result = value.toString();
@@ -109,28 +104,18 @@ io.on('connection', function (socket) {
         updateInfo(io);
     });
     socket.on('starting', function (item) {
-        console.log(item);
-        playlist[item].start();
+        var x = playlist[item];
+        x.start(x);
     });
     socket.on('stopping', function (item) {
-        console.log(item);
         playlist[item].stop();
+    });
+    socket.on('reseting', function (item) {
+        playlist[item].reset();
     });
 });
 function updateInfo(target) {
-    var prettyPlaylist = playlist.concat();
-    var counter = 0;
-    if (playlist.length > 0) {
-        prettyPlaylist.forEach(function (item, index, array) {
-                counter++;
-                if (counter === playlist.length) {
-                    target.emit('list', prettyPlaylist);
-                }
-            });
-    } else {
-        target.emit('list', []);
-    }
-
+    target.emit('list', playlist);
 }
 
 app.use('/client', express.static(path.join(__dirname + '/client')));

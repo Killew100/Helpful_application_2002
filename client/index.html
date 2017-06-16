@@ -33,7 +33,7 @@
     <div class="navbar navbar-default navbar-static-top">
         <div class="container-fluid">
             <div class="navbar-header">
-                <div class="navbar-brand">Helping Application 2002</div>
+                <div class="navbar-brand">Helpful Application 2002</div>
             </div>
         </div>
     </div>
@@ -70,6 +70,11 @@
                                 </button>
                             </td>
                             <td>
+                                <button class="btn btn-info btn-sm" type="button" ng-click="reset($index)">
+                                    <i class="fa fa-times"></i>
+                                </button>
+                            </td>
+                            <td>
                                 <button class="btn btn-danger btn-sm" type="button" ng-click="remove($index)">
                                     <i class="fa fa-times"></i>
                                 </button>
@@ -81,7 +86,7 @@
                     <div class="form-group">
                         <form ng-submit="add()">
                             <div class="input-group">
-                                <input pattern="(^[A-Za-z]{3}[0-9]{3}$)" type="text" class="form-control" placeholder="Auto number" ng-model="new">
+                                <input pattern="^[A-Za-z]{3}[0-9]{3}$" type="text" class="form-control" placeholder="Auto number" ng-model="new">
                                 <span class="input-group-btn">
                             <button class="btn btn-success" type="submit">Lisa</button>
                         </span>

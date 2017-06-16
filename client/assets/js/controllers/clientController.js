@@ -8,7 +8,9 @@ app.controller("clientController", ["$q", "$scope", "$filter", "socketService",
             $scope.list = list;
         });
         $scope.add = function () {
-            socket.emit("add", $scope.new);
+            if ($scope.new !== "") {
+                socket.emit("add", $scope.new);
+            }
             $scope.new = "";
         };
         $scope.remove = function (index) {
@@ -19,5 +21,8 @@ app.controller("clientController", ["$q", "$scope", "$filter", "socketService",
         };
         $scope.start = function (item) {
             socket.emit("starting", item);
+        };
+        $scope.reset = function (item) {
+            socket.emit("reseting", item);
         };
     }]);
