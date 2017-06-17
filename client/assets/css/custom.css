@@ -14,6 +14,21 @@ body, html {
     width: 100%;
     text-align: center;
 }
-.slider {
-    margin-top: 40px;
+.table {
+    text-align: center;
+    height: 4vw;
 }
+td {
+    font-size: 1.5vw;
+    vertical-align: middle !important;
+}
+.current {
+    text-align: center;
+    font-size: 1.5vw;
+}
+.button2 {
+    width: 10vw;
+    height: 2.5vw;
+}
+
+

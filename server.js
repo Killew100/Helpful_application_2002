@@ -6,20 +6,14 @@ var io = require('socket.io').listen(http);
 var clk = require('chalk');
 var bodyParser = require('body-parser');
 var cors = require('cors');
-var readline = require('readline');
-var getVideoId = require('get-video-id');
-var fetchVideoInfo = require('youtube-info');
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({extended: true})); // support encoded bodies
 app.use(cors());
-var rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
 app.options('*', cors());
-var current = null;
 var playlist = [];
-
+var sqlite3 = require('sqlite3');
+var db = new sqlite3.Database('mydb.sqlite');
+var read = true;
 app.get('/player', function (req, res) {
     res.sendFile(__dirname + '/player.html');
 });
@@ -27,13 +21,15 @@ app.get('/player', function (req, res) {
 Array.prototype.insert = function (index, item) {
     this.splice(index, 0, item);
 };
-function Timer(name) {
+function Timer(name, one, two, three) {
     this.running = false;
     this.name = name;
     this.display = "00:00:00";
-    this.times = [ 0, 0, 0 ];
+    this.times = [ one, two, three];
     this.stop();
     this.print(this.times);
+    updateInfo(io);
+
 }
 Timer.prototype.reset = function () {
         this.times = [ 0, 0, 0 ];
@@ -57,18 +53,17 @@ Timer.prototype.stop = function() {
 Timer.prototype.step = function(car) {
         if (!car.running) return;
         car.times[2] += 1;
-        // Seconds are 100 hundredths of a second
         if (car.times[2] >= 60) {
             car.times[1] += 1;
             car.times[2] -= 60;
         }
-        // Minutes are 60 seconds
         if (car.times[1] >= 60) {
             car.times[0] += 1;
             car.times[1] -= 60;
         }
         car.print(car.times);
         updateInfo(io);
+        db.run("UPDATE car SET hour = ?, minute = ?, second = ? WHERE name = ?", [car.times[0], car.times[1], car.times[2], car.name]);
         setTimeout(function(){
             car.step(car) },
             1000);
@@ -90,16 +85,19 @@ function pad0(value, count) {
 }
 
 io.on('connection', function (socket) {
+    updateInfo(socket);
     socket.on('add', function (url) {
-        var car = new Timer(url);
+        var car = new Timer(url, 0, 0, 0);
         if (car !== undefined) {
             console.log(clk.blue('Lisan auto: ') + clk.blue.bold(car.name));
             playlist.push(car);
+            db.run("INSERT into car(name, hour, minute, second) VALUES (?, ?, ?, ?)", [url, 0, 0, 0])
             }
         updateInfo(io);
     });
     socket.on('remove', function (index) {
-        console.log(clk.red('Eemaldan auto: ') + clk.red.bold(playlist[index]));
+        console.log(clk.red('Eemaldan auto: ') + clk.red.bold(playlist[index].namee));
+        db.run("DELETE FROM car WHERE name = ?", [playlist[index].name]);
         playlist.splice(index, 1);
         updateInfo(io);
     });
@@ -119,7 +117,14 @@ function updateInfo(target) {
 }
 
 app.use('/client', express.static(path.join(__dirname + '/client')));
-
-http.listen(1337, function () {
-    console.log(clk.green.bold('listening on *:' + 1337));
+db.run("CREATE TABLE IF NOT EXISTS car (id INTEGER PRIMARY KEY AUTOINCREMENT" +
+    ", name STRING, hour INTEGER, minute INTEGER, second INTEGER)");
+db.all('SELECT * FROM car ORDER BY id ASC', function (err, rows) {
+    rows.forEach(function (row) {
+        var car = new Timer(row.name, row.hour, row.minute, row.second);
+        playlist.push(car);
+    });
+    http.listen(1337, function () {
+        console.log(clk.green('Listening on port 1337'));
+    });
 });
