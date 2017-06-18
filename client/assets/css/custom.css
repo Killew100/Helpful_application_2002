@@ -21,15 +21,19 @@ body, html {
 }
 td {
     font-size: 1.5vw;
+    min-font-size: 12px;
     vertical-align: middle !important;
 }
 .current {
     text-align: center;
     font-size: 1.5vw;
+    min-font-size: 12px;
+
 }
 .button2 {
     width: 10vw;
-    height: 5vw;
+    height: 4vw;
+    min-height: 40px;
 }
 .navbar, .navbar.navbar-default {
     background-color: #3e94ec;
