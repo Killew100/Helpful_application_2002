@@ -8,15 +8,7 @@ app.controller("clientController", ["$q", "$scope", "$filter", "socketService",
             $scope.list = list;
         });
         $scope.add = function () {
-            $scope.new = $scope.new.toUpperCase();
-            var i = $scope.list.length;
-            var count = true;
-            while (i--) {
-                if ($scope.list[i].name === $scope.new) {
-                    count = false;
-                }
-            }
-            if ($scope.new !== "" && count) {
+            if ($scope.new !== "") {
                 socket.emit("add", $scope.new);
             }
             $scope.new = "";

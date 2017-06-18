@@ -17,6 +17,7 @@ body, html {
 .table {
     text-align: center;
     height: 4vw;
+    text-transform: uppercase;
 }
 td {
     font-size: 1.5vw;
@@ -30,5 +31,10 @@ td {
     width: 10vw;
     height: 2.5vw;
 }
-
+.navbar, .navbar.navbar-default {
+    background-color: #3e94ec;
+}
+input{
+    text-transform: uppercase;
+}
 

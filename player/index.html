@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="gigglClient">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1.0; maximum-scale=1.0; width=device-width;">
+    <link rel="stylesheet" href="css/style.css">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE-edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Helpful Application 2002</title>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular-chart.js/1.1.1/angular-chart.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular-socket-io/0.7.0/socket.min.js"></script>
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"/>
+    <script src="assets/js/bootstrap.min.js"></script>
+    <script src="assets/js/bootstrap-datepicker.js"></script>
+    <script src="assets/js/material-kit.js"></script>
+    <script src="assets/js/material.min.js"></script>
+    <script src="assets/js/jquery.nouislider.js"></script>
+    <script src="assets/js/nouislider.ng.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/controllers/clientController.js"></script>
+    <script src="assets/js/services/socketService.js"></script>
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.0/css/font-awesome.min.css" rel="stylesheet">
+</head>
+
+<body>
+<div class="app-container" ng-controller="clientController">
+    <div class="wrapper">
+    <div class="table-title">
+    <span ng-if="list.length == 0">
+                            <h3 class="text-danger">Ühtegi autot pole töös</h3>
+                        </span>
+        <span ng-if="list.length == 1">
+                            <h3 class="text-success">Töös on 1 auto</h3>
+                        </span>
+        <span ng-if="list.length > 1">
+                            <h3 class="text-success">Töös on {{list.length}} autot</h3>
+                        </span>
+    </div>
+    <table class="table-fill">
+    <thead>
+    <tr>
+        <th class="text-center">Auto Number</th>
+        <th class="text-center">Kulunud aeg</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="item in list">
+        <td class="text-center"><div>{{item.name}}</div></td>
+        <td class="text-center"><div>{{item.display}}</div></td>
+    </tr>
+    </tbody>
+</table>
+    </div>
+</div>
+</body>

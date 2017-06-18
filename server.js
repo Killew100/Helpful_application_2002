@@ -14,10 +14,6 @@ var playlist = [];
 var sqlite3 = require('sqlite3');
 var db = new sqlite3.Database('mydb.sqlite');
 var read = true;
-app.get('/player', function (req, res) {
-    res.sendFile(__dirname + '/player.html');
-});
-
 Array.prototype.insert = function (index, item) {
     this.splice(index, 0, item);
 };
@@ -116,6 +112,7 @@ function updateInfo(target) {
     target.emit('list', playlist);
 }
 
+app.use('/player', express.static(path.join(__dirname + '/player')));
 app.use('/client', express.static(path.join(__dirname + '/client')));
 db.run("CREATE TABLE IF NOT EXISTS car (id INTEGER PRIMARY KEY AUTOINCREMENT" +
     ", name STRING, hour INTEGER, minute INTEGER, second INTEGER)");
