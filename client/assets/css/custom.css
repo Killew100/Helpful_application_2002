@@ -20,14 +20,14 @@ body, html {
     text-transform: uppercase;
 }
 td {
-    font-size: 1.5vw;
+    font-size: 3vw;
     min-font-size: 12px;
     vertical-align: middle !important;
 }
 .current {
     text-align: center;
-    font-size: 1.5vw;
-    min-font-size: 12px;
+    font-size: 2vw;
+    max-font-size: 80px;
 
 }
 .button2 {
