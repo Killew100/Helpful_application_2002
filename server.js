@@ -117,10 +117,12 @@ app.use('/client', express.static(path.join(__dirname + '/client')));
 db.run("CREATE TABLE IF NOT EXISTS car (id INTEGER PRIMARY KEY AUTOINCREMENT" +
     ", name STRING, hour INTEGER, minute INTEGER, second INTEGER)");
 db.all('SELECT * FROM car ORDER BY id ASC', function (err, rows) {
-    rows.forEach(function (row) {
-        var car = new Timer(row.name, row.hour, row.minute, row.second);
-        playlist.push(car);
-    });
+    if(rows !== undefined){
+        rows.forEach(function (row) {
+            var car = new Timer(row.name, row.hour, row.minute, row.second);
+            playlist.push(car);
+        });
+    }
     http.listen(1337, function () {
         console.log(clk.green('Listening on port 1337'));
     });
